@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Dino</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ground-color: #795548;
+            --sky-color: #87CEEB;
+            --text-color: #4CAF50;
+            --platform-bg: #E0E0E0;
+            --input-bg: #f5f5f5;
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'VT323', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: linear-gradient(to bottom, var(--sky-color), #f0e68c);
+        }
+
+        /* --- Pixel Art & Animation Containers --- */
+        .game-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 20px;
+            background-color: var(--ground-color);
+            background-image:
+                linear-gradient(90deg, #604038 1px, transparent 1px),
+                linear-gradient(90deg, #604038 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: ground-scroll 1.5s linear infinite;
+        }
+        @keyframes ground-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .cactus {
+            position: absolute;
+            bottom: 20px;
+            height: 40px;
+            width: 20px;
+            background: #4CAF50;
+            animation: scroll 12s linear infinite;
+        }
+        .cloud {
+            position: absolute;
+            height: 20px;
+            width: 50px;
+            background: #fff;
+            animation: cloud-scroll 20s linear infinite;
+        }
+        
+        @keyframes scroll {
+            from { left: 100%; }
+            to { left: -10%; }
+        }
+        @keyframes cloud-scroll {
+            from { left: 100%; }
+            to { left: -10%; }
+        }
+
+        .dino {
+            position: absolute;
+            bottom: 20px;
+            left: 10%;
+            width: 40px;
+            height: 40px;
+            background-color: #4CAF50;
+            clip-path: polygon(
+                20% 0, 80% 0, 100% 20%, 100% 60%, 80% 100%, 20% 100%, 0 80%, 0 20%
+            );
+            animation: dino-run 0.5s steps(2) infinite;
+        }
+        .dino.jumping {
+            animation: dino-jump 0.5s ease-out forwards;
+        }
+        .dino.colliding {
+            animation: dino-fall 0.5s linear forwards;
+        }
+
+        @keyframes dino-run {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(0); }
+            100% { transform: translateY(0); }
+        }
+        @keyframes dino-jump {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-80px); }
+            100% { transform: translateY(0); }
+        }
+        @keyframes dino-fall {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(90deg) translateY(20px); }
+        }
+
+        /* --- Login Form on a Platform --- */
+        .login-platform {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            padding: 20px;
+            background: var(--platform-bg);
+            border: 5px solid #000;
+            box-shadow: 8px 8px 0 #000;
+            text-align: center;
+            animation: platform-float 1s ease-out forwards;
+        }
+        @keyframes platform-float {
+            from { transform: translateX(-50%) translateY(300px); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+
+        .login-platform.shatter {
+            animation: shatter 0.5s ease-out forwards;
+        }
+        @keyframes shatter {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #000;
+            margin-bottom: 0;
+        }
+        p {
+            font-size: 1.2em;
+            color: #333;
+            margin-top: 0;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .login-form input {
+            padding: 10px;
+            background: var(--input-bg);
+            border: 2px solid #000;
+            border-radius: 0;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            color: #000;
+            box-shadow: 4px 4px 0 #000;
+        }
+        .login-form input:focus {
+            outline: none;
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .login-button {
+            padding: 10px;
+            background: var(--text-color);
+            color: white;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0 #000;
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 0 #000;
+        }
+        .login-button:active {
+            transform: translateY(2px);
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        /* --- Custom Modal/Message Box --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            color: #000;
+            margin: 15% auto;
+            padding: 20px;
+            border: 2px solid #000;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 8px 8px 0 #000;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="ground"></div>
+        <div class="cloud" style="top: 10%; animation-duration: 15s;"></div>
+        <div class="cloud" style="top: 20%; animation-duration: 20s;"></div>
+        <div class="cloud" style="top: 30%; animation-duration: 18s;"></div>
+        <div class="cactus" style="animation-duration: 12s;"></div>
+        <div class="cactus" style="animation-duration: 15s;"></div>
+        <div class="dino" id="dino"></div>
+    </div>
+
+    <div class="login-platform" id="login-platform">
+        <h1>LOGIN</h1>
+        <p>Login to start your journey!</p>
+        <form class="login-form">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button type="submit" class="login-button">START</button>
+        </form>
+    </div>
+
+    <!-- Custom Modal/Message Box -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <p id="modal-message"></p>
+        </div>
+    </div>
+
+    <script>
+        const dino = document.getElementById('dino');
+        const loginPlatform = document.getElementById('login-platform');
+        const ground = document.querySelector('.ground');
+        const form = document.querySelector('.login-form');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const modal = document.getElementById('myModal');
+        const closeBtn = document.querySelector('.close-button');
+
+        // Function to create a temporary cactus
+        function createCactus() {
+            const cactus = document.createElement('div');
+            cactus.classList.add('cactus');
+            cactus.style.left = '90%'; // Appears on the right
+            cactus.style.animation = 'scroll 1s linear forwards';
+            cactus.style.bottom = '20px';
+            document.querySelector('.game-container').appendChild(cactus);
+            setTimeout(() => cactus.remove(), 1000);
+        }
+
+        // Spacebar to make the dino jump
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !dino.classList.contains('jumping')) {
+                dino.classList.add('jumping');
+                setTimeout(() => dino.classList.remove('jumping'), 500);
+            }
+        });
+
+        // Function to show the custom modal
+        function showModal(message) {
+            const modalMessage = document.getElementById('modal-message');
+            modalMessage.textContent = message;
+            modal.style.display = 'block';
+        }
+
+        // Login form submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const password = passwordInput.value;
+
+            // Simple password check
+            if (password === 'dino') {
+                loginPlatform.classList.add('shatter');
+                dino.style.animation = 'none';
+                dino.style.left = '10%';
+                dino.style.transition = 'left 1s linear';
+                dino.style.left = '100%';
+                ground.style.animationDuration = '0.5s';
+                showModal('Login successful! You ran to the dashboard!');
+            } else {
+                createCactus();
+                dino.classList.add('colliding');
+                setTimeout(() => {
+                    dino.classList.remove('colliding');
+                    showModal('Wrong password! The dino fell and got back up.');
+                }, 500);
+            }
+        });
+
+        // Close modal functionality
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
